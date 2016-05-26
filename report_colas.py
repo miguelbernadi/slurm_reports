@@ -34,7 +34,7 @@ def parse_time(timestring):
     elif len(time) == 2:
         minutes = int(time[0]) * 60
         seconds = int(time[1])
-    return days, hours, minutes, seconds
+    return days + hours + minutes + seconds
 
 
 class Statistics:
@@ -77,8 +77,7 @@ class Statistics:
             self.hours[username] = cpu_hours
 
     def compute_cpu_hours(self, cpu, duration):
-        days, hours, minutes, seconds = parse_time(duration)
-        total = (days + hours + minutes + seconds) * int(cpu) / 3600.
+        total = parse_time(duration) * int(cpu) / 3600.
         self.total_compute_hours += total
         return total
 
