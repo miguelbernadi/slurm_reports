@@ -152,6 +152,7 @@ class Statistics:
 parser = argparse.ArgumentParser(description='Report on job scheduler usage')
 parser.add_argument('--start', help='Date where the period starts')
 parser.add_argument('--end',   help='Date where the period ends')
+parser.add_argument('--user',   help='Analyze a specific user')
 
 args = parser.parse_args()
 
@@ -165,6 +166,9 @@ if args.start == None or args.end == None:
 if not pattern_date_format.match(args.start) or not pattern_date_format.match(args.end):
      print "The appropriate date format is of the form YYYY-MM-DD"
      sys.exit()
+
+if args.user != None:
+     sacct_command.append("-u" + args.user)
 
 # Apply the validated inputs
 sacct_command.append("-S" + args.start)
