@@ -130,7 +130,7 @@ class Statistics:
 
 
     def timelimit_histogram(self):
-        values, limits = np.histogram(self.histo,bins=[0,60,120,300,600,1200,1800,3600,7200,10800,14400,18000,21600])
+        values, limits = np.histogram(self.histo,bins=[0,60,120,300,600,1200,1800,3600,7200,10800,14400,18000,21600,25200,28800,32400])
         print "Timelimit table"
         print "%13s | %6s" % ("time range", "amount")
         print "-" * 22
@@ -138,7 +138,7 @@ class Statistics:
             print "%5s - %5s | %6s" % (limits[i], limits[i+1], values[i])
 
     def elapsed_histogram(self):
-        values, limits = np.histogram(self.elapsed,bins=[0,60,120,300,600,1200,1800,3600,7200,10800,14400,18000,21600])
+        values, limits = np.histogram(self.elapsed,bins=[0,60,120,300,600,1200,1800,3600,7200,10800,14400,18000,21600,25200,28800,32400])
         print "Elapsed table"
         print "%13s | %6s" % ("time range", "amount")
         print "-" * 22
