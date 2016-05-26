@@ -4,6 +4,7 @@ import sys
 import argparse
 import subprocess
 import re
+import numpy as np
 
 sacct_command = [
                  "/opt/perf/bin/sacct",
@@ -40,6 +41,8 @@ def parse_time(timestring):
 class Statistics:
     jobs = {} #Hold per user entries
     hours = {} #Hold per user entries
+    histo = [] #Timelimit histogram
+    elapsed = []
     total_entries = 0
     total_completed = 0
     total_timeout = 0
@@ -61,6 +64,9 @@ class Statistics:
         partition = job_fields[2]
         cpus = job_fields[4]
         self.count_job_status(job_fields[5])
+        self.histo.append(parse_time(job_fields[8]))
+        self.elapsed.append(parse_time(job_fields[7]))
+      
         duration = job_fields[7]
         timelimit = job_fields[8]
 
@@ -122,6 +128,23 @@ class Statistics:
         print "-" * 42
         print "%10s   %8d   %9.2f   %6.2f" % ("Total", self.total_entries, self.total_compute_hours, self.total_compute_hours/4166.40) # 416640 cpu hours in a week
 
+
+    def timelimit_histogram(self):
+        values, limits = np.histogram(self.histo,bins=[0,60,120,300,600,1200,1800,3600,7200,10800,14400,18000,21600])
+        print "Timelimit table"
+        print "%13s | %6s" % ("time range", "amount")
+        print "-" * 22
+        for i in range(0, len(values)):
+            print "%5s - %5s | %6s" % (limits[i], limits[i+1], values[i])
+
+    def elapsed_histogram(self):
+        values, limits = np.histogram(self.elapsed,bins=[0,60,120,300,600,1200,1800,3600,7200,10800,14400,18000,21600])
+        print "Elapsed table"
+        print "%13s | %6s" % ("time range", "amount")
+        print "-" * 22
+        for i in range(0, len(values)):
+            print "%5s - %5s | %6s" % (limits[i], limits[i+1], values[i])
+
     
 # Main
 
@@ -154,6 +177,10 @@ try:
             results.aggregate_job_data(line.split("|"))
 
     results.summarize_output()
+    print ""
+    results.elapsed_histogram()
+    print ""
+    results.timelimit_histogram()
 
 except subprocess.CalledProcessError as e:
     print "Execution error in:"
