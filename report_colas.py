@@ -136,26 +136,35 @@ class Statistics:
     def timelimit_histogram(self):
         values, limits = np.histogram([i[1] for i in self.times],bins=time_bins)
         print "Timelimit table"
-        print "%15s | %6s" % ("time range (s)", "amount")
-        print "-" * 22
+        print "%15s | %6s | %8s - %8s" % ("accuracy (%)", "amount", "percent", "cumulat")
+        print "-" * 46
+        cum = 0
         for i in range(0, len(values)):
-            print "%6d - %6d | %6d (%6.2f %%)" % (limits[i], limits[i+1], values[i], 100.0 * values[i] / self.total_completed)
+            percent = 100.0 * values[i] / self.total_completed
+            cum += percent
+            print "%6d - %6d | %6d (%6.2f %% - %6.2f %%)" % (limits[i], limits[i+1], values[i], percent, cum)
 
     def elapsed_histogram(self):
         values, limits = np.histogram([i[0] for i in self.times],bins=time_bins)
         print "Elapsed table"
-        print "%15s | %6s" % ("time range (s)", "amount")
-        print "-" * 22
+        print "%15s | %6s | %8s - %8s" % ("accuracy (%)", "amount", "percent", "cumulat")
+        print "-" * 46
+        cum = 0
         for i in range(0, len(values)):
-            print "%6d - %6d | %6d (%6.2f %%)" % (limits[i], limits[i+1], values[i], 100.0 * values[i] / self.total_completed)
+            percent = 100.0 * values[i] / self.total_completed
+            cum += percent
+            print "%6d - %6d | %6d (%6.2f %% - %6.2f %%)" % (limits[i], limits[i+1], values[i], percent, cum)
 
     def accuracy_histogram(self):
         values, limits = np.histogram([i[2] for i in self.times],bins=[0,5,10,20,30,40,50,60,70,80,90,100,200,300,400,500,600,700,800,900,1000])
         print "Accuracy table"
-        print "%13s | %6s" % ("accuracy (%)", "amount")
-        print "-" * 22
+        print "%13s | %6s | %8s - %8s" % ("accuracy (%)", "amount", "percent", "cumulat")
+        print "-" * 44
+        cum = 0
         for i in range(0, len(values)):
-            print "%5.0f - %5.0f | %6d (%6.2f %%)" % (limits[i], limits[i+1], values[i], 100.0 * values[i] / self.total_completed)
+            percent = 100.0 * values[i] / self.total_completed
+            cum += percent
+            print "%5.0f - %5.0f | %6d | %6.2f %% - %6.2f %%" % (limits[i], limits[i+1], values[i], percent, cum)
     
 # Main
 
