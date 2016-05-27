@@ -151,7 +151,7 @@ class Statistics:
 
     def accuracy_histogram(self):
         values, limits = np.histogram([i[2] for i in self.times],bins=[0,5,10,20,30,40,50,60,70,80,90,100,200,300,400,500,600,700,800,900,1000])
-        print "Elapsed table"
+        print "Accuracy table"
         print "%13s | %6s" % ("accuracy (%)", "amount")
         print "-" * 22
         for i in range(0, len(values)):
