@@ -170,6 +170,11 @@ class Statistics:
             cum += percent
             print "%5.0f - %5.0f | %6d | %6.2f %% - %6.2f %%" % (limits[i], limits[i+1], values[i], percent, cum)
     
+def dump_configuration(config):
+    for section in config.sections():
+        for element in config.items(section):
+            print section, element
+
 # Main
 
 # Configuration defaults
@@ -185,6 +190,7 @@ parser.add_argument('--start', help='Date where the period starts')
 parser.add_argument('--end',   help='Date where the period ends')
 parser.add_argument('--user',   help='Analyze a specific user')
 parser.add_argument('-c', '--config',help='Path to config file',          action='store')
+parser.add_argument('--debug',       help='Print lots of internal information', action="store_true")
 
 args = parser.parse_args()
 
@@ -203,6 +209,9 @@ config.read(config.get("general", "configuration_file_path"))
 if not pattern_date_format.match(args.start) or not pattern_date_format.match(args.end):
      print "The appropriate date format is of the form YYYY-MM-DD"
      sys.exit()
+# Apply cli options
+if args.debug:
+    dump_configuration(config)
 
 if args.user != None:
      sacct_command.append("-u" + args.user)
