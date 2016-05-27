@@ -22,6 +22,7 @@ sacct_command = [
 
 #                         10m  20m  30m   1h   2h    3h    4h    5h    6h    7h    8h    9h   10h   11h   12h   24h    48h    72h     7d
 time_bins = [0,60,120,300,600,1200,1800,3600,7200,10800,14400,18000,21600,25200,28800,32400,36000,39600,43200,86400,172800,259200,604800]
+pattern_date_format = re.compile("^20[0-9][0-9]-[0-9]+-[0-9]+$")
 pattern_time = re.compile("[0-9]+")
 def parse_time(timestring):
     days = 0
@@ -175,6 +176,12 @@ def dump_configuration(config):
         for element in config.items(section):
             print section, element
 
+def valid_date_string(string):
+    if not pattern_date_format.match(string):
+         msg="%r is not a valid date string. Format is YYYY-MM-DD" % string
+         raise argparse.ArgumentTypeError(msg)
+    return string
+
 # Main
 
 # Configuration defaults
@@ -186,29 +193,21 @@ config.set("general", "configuration_file_path", "./config")
 
 # Parse options
 parser = argparse.ArgumentParser(description='Report on job scheduler usage')
-parser.add_argument('--start', help='Date where the period starts')
-parser.add_argument('--end',   help='Date where the period ends')
 parser.add_argument('--user',   help='Analyze a specific user')
+parser.add_argument('--start',       help='Date where the period starts', required=True, action='store', type=valid_date_string)
+parser.add_argument('--end',         help='Date where the period ends',   required=True, action='store', type=valid_date_string)
 parser.add_argument('-c', '--config',help='Path to config file',          action='store')
 parser.add_argument('--debug',       help='Print lots of internal information', action="store_true")
 
 args = parser.parse_args()
 
-# Validate inputs
-pattern_date_format = re.compile("^20[0-9][0-9]-[0-9]+-[0-9]+$")
 # Override configuration file location
 if args.config != None:
     config.set("general", "configuration_file_path", args.config)
 
-if args.start == None or args.end == None:
-     print "You must specify the limits for the period of the report."
-     sys.exit()
 # Read configuration file 
 config.read(config.get("general", "configuration_file_path"))
 
-if not pattern_date_format.match(args.start) or not pattern_date_format.match(args.end):
-     print "The appropriate date format is of the form YYYY-MM-DD"
-     sys.exit()
 # Apply cli options
 if args.debug:
     dump_configuration(config)
