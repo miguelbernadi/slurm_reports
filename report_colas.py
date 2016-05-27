@@ -16,6 +16,8 @@ sacct_command = [
                  "-P"
                 ]
 
+#                         10m  20m  30m   1h   2h    3h    4h    5h    6h    7h    8h    9h   10h   11h   12h   24h    48h    72h
+time_bins = [0,60,120,300,600,1200,1800,3600,7200,10800,14400,18000,21600,25200,28800,32400,36000,39600,43200,86400,172800,259200]
 pattern_time = re.compile("[0-9]+")
 def parse_time(timestring):
     days = 0
@@ -132,20 +134,20 @@ class Statistics:
 
 
     def timelimit_histogram(self):
-        values, limits = np.histogram([i[1] for i in self.times],bins=[0,60,120,300,600,1200,1800,3600,7200,10800,14400,18000,21600,25200,28800,32400])
+        values, limits = np.histogram([i[1] for i in self.times],bins=time_bins)
         print "Timelimit table"
-        print "%13s | %6s" % ("time range (s)", "amount")
+        print "%15s | %6s" % ("time range (s)", "amount")
         print "-" * 22
         for i in range(0, len(values)):
-            print "%5d - %5d | %6d (%6.2f %%)" % (limits[i], limits[i+1], values[i], 100.0 * values[i] / self.total_completed)
+            print "%6d - %6d | %6d (%6.2f %%)" % (limits[i], limits[i+1], values[i], 100.0 * values[i] / self.total_completed)
 
     def elapsed_histogram(self):
-        values, limits = np.histogram([i[0] for i in self.times],bins=[0,60,120,300,600,1200,1800,3600,7200,10800,14400,18000,21600,25200,28800,32400])
+        values, limits = np.histogram([i[0] for i in self.times],bins=time_bins)
         print "Elapsed table"
-        print "%13s | %6s" % ("time range (s)", "amount")
+        print "%15s | %6s" % ("time range (s)", "amount")
         print "-" * 22
         for i in range(0, len(values)):
-            print "%5d - %5d | %6d (%6.2f %%)" % (limits[i], limits[i+1], values[i], 100.0 * values[i] / self.total_completed)
+            print "%6d - %6d | %6d (%6.2f %%)" % (limits[i], limits[i+1], values[i], 100.0 * values[i] / self.total_completed)
 
     def accuracy_histogram(self):
         values, limits = np.histogram([i[2] for i in self.times],bins=[0,5,10,20,30,40,50,60,70,80,90,100,200,300,400,500,600,700,800,900,1000])
