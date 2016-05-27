@@ -8,6 +8,7 @@ import subprocess
 import re
 #Histograms
 import numpy as np
+import ConfigParser
 
 sacct_command = [
                  "/opt/perf/bin/sacct",
@@ -112,8 +113,8 @@ class Statistics:
         else:
             self.total_unknown += 1
 
-    def summary_report(self):
-        print "Report for SLURM usage at CNAG"
+    def summary_report(self, title):
+        print title
         print "Data gathered between %s - %s"    % (args.start, args.end)
         print "-" * 48
         print "Jobs submitted:               %6d  (%6.2f %%)" % ( self.total_entries,        float(self.total_entries)/self.total_entries * 100 )
@@ -171,6 +172,13 @@ class Statistics:
     
 # Main
 
+# Configuration defaults
+defaults = {}
+config = ConfigParser.SafeConfigParser(defaults, allow_no_value=True)
+config.add_section("general")
+config.set("general", "report_title", "Report")
+config.set("general", "configuration_file_path", "./config")
+
 # Parse options
 parser = argparse.ArgumentParser(description='Report on job scheduler usage')
 parser.add_argument('--start', help='Date where the period starts')
@@ -185,6 +193,8 @@ pattern_date_format = re.compile("^20[0-9][0-9]-[0-9]+-[0-9]+$")
 if args.start == None or args.end == None:
      print "You must specify the limits for the period of the report."
      sys.exit()
+# Read configuration file 
+config.read(config.get("general", "configuration_file_path"))
 
 if not pattern_date_format.match(args.start) or not pattern_date_format.match(args.end):
      print "The appropriate date format is of the form YYYY-MM-DD"
@@ -203,7 +213,7 @@ try:
         if line: 
             results.aggregate_job_data(line.split("|"))
 
-    results.summary_report()
+    results.summary_report(config.get("general", "report_title"))
     print ""
     results.user_consumption_report()
     print ""
