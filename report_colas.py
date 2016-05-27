@@ -109,7 +109,7 @@ class Statistics:
         else:
             self.total_unknown += 1
 
-    def summarize_output(self):
+    def summary_report(self):
         print "Report for SLURM usage at CNAG"
         print "Data gathered between %s - %s"    % (args.start, args.end)
         print "-" * 48
@@ -124,7 +124,7 @@ class Statistics:
         if self.total_unknown > 0:
             print "WARNING: unknown state: %s"   % self.total_unknown
 
-        print ""
+    def user_consumption_report(self):
         print "%10s   %8s   %-12s" % ("Username", "Jobs", "Cpu_hours")
         print "-" * 42
         for key in sorted(self.jobs.keys()):
@@ -200,7 +200,9 @@ try:
         if line: 
             results.aggregate_job_data(line.split("|"))
 
-    results.summarize_output()
+    results.summary_report()
+    print ""
+    results.user_consumption_report()
     print ""
     results.elapsed_histogram()
     print ""
