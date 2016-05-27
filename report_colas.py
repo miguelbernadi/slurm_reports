@@ -193,9 +193,9 @@ config.set("general", "configuration_file_path", "./config")
 
 # Parse options
 parser = argparse.ArgumentParser(description='Report on job scheduler usage')
-parser.add_argument('--user',   help='Analyze a specific user')
 parser.add_argument('--start',       help='Date where the period starts', required=True, action='store', type=valid_date_string)
 parser.add_argument('--end',         help='Date where the period ends',   required=True, action='store', type=valid_date_string)
+parser.add_argument('-u', '--user',  help='Analyze a specific user',      action='store', nargs='*')
 parser.add_argument('-c', '--config',help='Path to config file',          action='store')
 parser.add_argument('--debug',       help='Print lots of internal information', action="store_true")
 
@@ -212,10 +212,9 @@ config.read(config.get("general", "configuration_file_path"))
 if args.debug:
     dump_configuration(config)
 
-if args.user != None:
-     sacct_command.append("-u" + args.user)
+if args.user:
+     sacct_command.append("-u" + ','.join(args.user))
 
-# Apply the validated inputs
 sacct_command.append("-S" + args.start)
 sacct_command.append("-E" + args.end)
 
