@@ -111,24 +111,24 @@ class Statistics:
         print "Report for SLURM usage at CNAG"
         print "Data gathered between %s - %s"    % (args.start, args.end)
         print "-" * 46
-        print "Jobs submitted:               %6d  (%6.2f)" % ( self.total_entries,        float(self.total_entries)/self.total_entries * 100 )
-        print "Jobs executed successfully:   %6d  (%6.2f)" % ( self.total_completed,      float(self.total_completed)/self.total_entries * 100 )
-        print "Jobs executed but timed out:  %6d  (%6.2f)" % ( self.total_timeout,        float(self.total_timeout)/self.total_entries * 100 )
-        print "Jobs executed but failed:     %6d  (%6.2f)" % ( self.total_failed,         float(self.total_failed)/self.total_entries * 100 )
-        print "Jobs where the node failed:   %6d  (%6.2f)" % ( self.total_node_fail,      float(self.total_node_fail)/self.total_entries * 100 )
-        print "Jobs cancelled automatically: %6d  (%6.2f)" % ( self.total_cancelled_auto, float(self.total_cancelled_auto)/self.total_entries * 100 )
-        print "Jobs cancelled by user:       %6d  (%6.2f)" % ( self.total_cancelled_user, float(self.total_cancelled_user)/self.total_entries * 100 )
-        print "Jobs still running:           %6d  (%6.2f)" % ( self.total_running,        float(self.total_running)/self.total_entries * 100 )
+        print "Jobs submitted:               %6d  (%6.2f %%)" % ( self.total_entries,        float(self.total_entries)/self.total_entries * 100 )
+        print "Jobs executed successfully:   %6d  (%6.2f %%)" % ( self.total_completed,      float(self.total_completed)/self.total_entries * 100 )
+        print "Jobs executed but timed out:  %6d  (%6.2f %%)" % ( self.total_timeout,        float(self.total_timeout)/self.total_entries * 100 )
+        print "Jobs executed but failed:     %6d  (%6.2f %%)" % ( self.total_failed,         float(self.total_failed)/self.total_entries * 100 )
+        print "Jobs where the node failed:   %6d  (%6.2f %%)" % ( self.total_node_fail,      float(self.total_node_fail)/self.total_entries * 100 )
+        print "Jobs cancelled automatically: %6d  (%6.2f %%)" % ( self.total_cancelled_auto, float(self.total_cancelled_auto)/self.total_entries * 100 )
+        print "Jobs cancelled by user:       %6d  (%6.2f %%)" % ( self.total_cancelled_user, float(self.total_cancelled_user)/self.total_entries * 100 )
+        print "Jobs still running:           %6d  (%6.2f %%)" % ( self.total_running,        float(self.total_running)/self.total_entries * 100 )
         if self.total_unknown > 0:
             print "WARNING: unknown state: %s"   % self.total_unknown
 
         print ""
-        print "%10s   %8s   %-12s   %-9s" % ("Username", "Jobs", "Cpu_hours", "%")
+        print "%10s   %8s   %-12s" % ("Username", "Jobs", "Cpu_hours")
         print "-" * 42
         for key in sorted(self.jobs.keys()):
-            print "%10s   %8d   %9.2f   %6.2f" % (key, self.jobs[key], self.hours[key], self.hours[key]/self.total_compute_hours * 100)
+            print "%10s   %8d   %9.2f (%6.2f %%)" % (key, self.jobs[key], self.hours[key], self.hours[key]/self.total_compute_hours * 100)
         print "-" * 42
-        print "%10s   %8d   %9.2f   %6.2f" % ("Total", self.total_entries, self.total_compute_hours, self.total_compute_hours/4166.40) # 416640 cpu hours in a week
+        print "%10s   %8d   %9.2f (%6.2f %%)" % ("Total", self.total_entries, self.total_compute_hours, self.total_compute_hours/4166.40) # 416640 cpu hours in a week
 
 
     def timelimit_histogram(self):
