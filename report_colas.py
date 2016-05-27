@@ -198,6 +198,7 @@ parser.add_argument('--end',         help='Date where the period ends',   requir
 parser.add_argument('-u', '--user',  help='Analyze a specific user',      action='store', nargs='*')
 parser.add_argument('-c', '--config',help='Path to config file',          action='store')
 parser.add_argument('--debug',       help='Print lots of internal information', action="store_true")
+parser.add_argument('--histogram',   help='Add histogram reports', choices=['all','none','timelimit','elapsed','accuracy'], default='all')
 
 args = parser.parse_args()
 
@@ -227,12 +228,15 @@ try:
     results.summary_report(config.get("general", "report_title"))
     print ""
     results.user_consumption_report()
-    print ""
-    results.elapsed_histogram()
-    print ""
-    results.timelimit_histogram()
-    print ""
-    results.accuracy_histogram()
+    if args.histogram == 'elapsed' or args.histogram == 'all':
+        print ""
+        results.elapsed_histogram()
+    if args.histogram == 'timelimit' or args.histogram == 'all':
+        print ""
+        results.timelimit_histogram()
+    if args.histogram == 'accuracy' or args.histogram == 'all':
+        print ""
+        results.accuracy_histogram()
 
 except subprocess.CalledProcessError as e:
     print "Execution error in:"
