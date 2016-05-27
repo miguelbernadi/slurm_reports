@@ -112,7 +112,7 @@ class Statistics:
     def summarize_output(self):
         print "Report for SLURM usage at CNAG"
         print "Data gathered between %s - %s"    % (args.start, args.end)
-        print "-" * 46
+        print "-" * 48
         print "Jobs submitted:               %6d  (%6.2f %%)" % ( self.total_entries,        float(self.total_entries)/self.total_entries * 100 )
         print "Jobs executed successfully:   %6d  (%6.2f %%)" % ( self.total_completed,      float(self.total_completed)/self.total_entries * 100 )
         print "Jobs executed but timed out:  %6d  (%6.2f %%)" % ( self.total_timeout,        float(self.total_timeout)/self.total_entries * 100 )
