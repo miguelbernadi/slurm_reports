@@ -184,11 +184,15 @@ parser = argparse.ArgumentParser(description='Report on job scheduler usage')
 parser.add_argument('--start', help='Date where the period starts')
 parser.add_argument('--end',   help='Date where the period ends')
 parser.add_argument('--user',   help='Analyze a specific user')
+parser.add_argument('-c', '--config',help='Path to config file',          action='store')
 
 args = parser.parse_args()
 
 # Validate inputs
 pattern_date_format = re.compile("^20[0-9][0-9]-[0-9]+-[0-9]+$")
+# Override configuration file location
+if args.config != None:
+    config.set("general", "configuration_file_path", args.config)
 
 if args.start == None or args.end == None:
      print "You must specify the limits for the period of the report."
