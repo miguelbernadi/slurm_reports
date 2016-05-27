@@ -2,8 +2,11 @@
 
 import sys
 import argparse
+#Calling sacct
 import subprocess
+#Regular expressions
 import re
+#Histograms
 import numpy as np
 
 sacct_command = [
