@@ -41,8 +41,7 @@ def parse_time(timestring):
 class Statistics:
     jobs = {} #Hold per user entries
     hours = {} #Hold per user entries
-    histo = [] #Timelimit histogram
-    elapsed = []
+    times = [] # list of tuples (elapsed, timelimit, accuracy)
     total_entries = 0
     total_completed = 0
     total_timeout = 0
@@ -64,12 +63,15 @@ class Statistics:
         partition = job_fields[2]
         cpus = job_fields[4]
         self.count_job_status(job_fields[5])
-        self.histo.append(parse_time(job_fields[8]))
-        self.elapsed.append(parse_time(job_fields[7]))
       
-        duration = job_fields[7]
-        timelimit = job_fields[8]
-
+        duration = parse_time(job_fields[7])
+        timelimit = parse_time(job_fields[8])
+        if job_fields[5] == "COMPLETED":
+            if timelimit > 0:
+                accuracy = 100.0 * duration / timelimit
+            else:
+                accuracy = 0
+            self.times.append(tuple([duration, timelimit, accuracy]))
 
     def count_per_user(self, username, cpu, duration, partition, qos): 
         cpu_hours = self.compute_cpu_hours(cpu, duration)
@@ -130,21 +132,28 @@ class Statistics:
 
 
     def timelimit_histogram(self):
-        values, limits = np.histogram(self.histo,bins=[0,60,120,300,600,1200,1800,3600,7200,10800,14400,18000,21600,25200,28800,32400])
+        values, limits = np.histogram([i[1] for i in self.times],bins=[0,60,120,300,600,1200,1800,3600,7200,10800,14400,18000,21600,25200,28800,32400])
         print "Timelimit table"
-        print "%13s | %6s" % ("time range", "amount")
+        print "%13s | %6s" % ("time range (s)", "amount")
         print "-" * 22
         for i in range(0, len(values)):
-            print "%5s - %5s | %6s" % (limits[i], limits[i+1], values[i])
+            print "%5d - %5d | %6d (%6.2f %%)" % (limits[i], limits[i+1], values[i], 100.0 * values[i] / self.total_completed)
 
     def elapsed_histogram(self):
-        values, limits = np.histogram(self.elapsed,bins=[0,60,120,300,600,1200,1800,3600,7200,10800,14400,18000,21600,25200,28800,32400])
+        values, limits = np.histogram([i[0] for i in self.times],bins=[0,60,120,300,600,1200,1800,3600,7200,10800,14400,18000,21600,25200,28800,32400])
         print "Elapsed table"
-        print "%13s | %6s" % ("time range", "amount")
+        print "%13s | %6s" % ("time range (s)", "amount")
         print "-" * 22
         for i in range(0, len(values)):
-            print "%5s - %5s | %6s" % (limits[i], limits[i+1], values[i])
+            print "%5d - %5d | %6d (%6.2f %%)" % (limits[i], limits[i+1], values[i], 100.0 * values[i] / self.total_completed)
 
+    def accuracy_histogram(self):
+        values, limits = np.histogram([i[2] for i in self.times],bins=[0,5,10,20,30,40,50,60,70,80,90,100,200,300,400,500,600,700,800,900,1000])
+        print "Elapsed table"
+        print "%13s | %6s" % ("accuracy (%)", "amount")
+        print "-" * 22
+        for i in range(0, len(values)):
+            print "%5.0f - %5.0f | %6d (%6.2f %%)" % (limits[i], limits[i+1], values[i], 100.0 * values[i] / self.total_completed)
     
 # Main
 
@@ -185,6 +194,8 @@ try:
     results.elapsed_histogram()
     print ""
     results.timelimit_histogram()
+    print ""
+    results.accuracy_histogram()
 
 except subprocess.CalledProcessError as e:
     print "Execution error in:"
