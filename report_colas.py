@@ -142,7 +142,7 @@ class Statistics:
         for i in range(0, len(values)):
             percent = 100.0 * values[i] / self.total_completed
             cum += percent
-            print "%6d - %6d | %6d (%6.2f %% - %6.2f %%)" % (limits[i], limits[i+1], values[i], percent, cum)
+            print "%6d - %6d | %6d | %6.2f %% - %6.2f %%" % (limits[i], limits[i+1], values[i], percent, cum)
 
     def elapsed_histogram(self):
         values, limits = np.histogram([i[0] for i in self.times],bins=time_bins)
@@ -153,7 +153,7 @@ class Statistics:
         for i in range(0, len(values)):
             percent = 100.0 * values[i] / self.total_completed
             cum += percent
-            print "%6d - %6d | %6d (%6.2f %% - %6.2f %%)" % (limits[i], limits[i+1], values[i], percent, cum)
+            print "%6d - %6d | %6d | %6.2f %% - %6.2f %%" % (limits[i], limits[i+1], values[i], percent, cum)
 
     def accuracy_histogram(self):
         values, limits = np.histogram([i[2] for i in self.times],bins=[0,5,10,20,30,40,50,60,70,80,90,100,200,300,400,500,600,700,800,900,1000])
