@@ -13,7 +13,7 @@ import ConfigParser
 import datetime
 
 sacct_command = [
-                 "/opt/perf/bin/sacct",
+                 "sacct",
                  "-a", 
                  "-o", 
                  "jobid,user,partition,qos,alloccpus,state,exitcode,elapsed,time", 
@@ -225,6 +225,7 @@ config = ConfigParser.SafeConfigParser(defaults, allow_no_value=True)
 config.add_section("general")
 config.set("general", "report_title", "Report")
 config.set("general", "configuration_file_path", "./config")
+config.set("general", "sacct_path", "sacct")
 
 # Parse options
 parser = argparse.ArgumentParser(description='Report on job scheduler usage')
@@ -262,6 +263,7 @@ try:
     total_avail_cpuh = int(config.get("general", "avail_cpu_number")) * timedelta.total_seconds() / 3600.0
 
     results = Statistics()
+    sacct_command[0] = config.get("general", "sacct_path")
     for line in subprocess.check_output(sacct_command).split("\n"):
         if line: 
             results.aggregate_job_data(line.split("|"))
