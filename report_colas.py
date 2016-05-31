@@ -9,6 +9,8 @@ import re
 #Histograms
 import numpy as np
 import ConfigParser
+#Handle dates
+import datetime
 
 sacct_command = [
                  "/opt/perf/bin/sacct",
@@ -44,6 +46,9 @@ def parse_time(timestring):
         seconds = int(time[1])
     return days + hours + minutes + seconds
 
+def parse_date(datestring):
+    date_array = datestring.split("-")
+    return datetime.date(int(date_array[0]),int(date_array[1]),int(date_array[2]))
 
 class Statistics:
     jobs = {} #Hold per user entries
@@ -129,13 +134,13 @@ class Statistics:
         if self.total_unknown > 0:
             print "WARNING: unknown state: %s"   % self.total_unknown
 
-    def user_consumption_report(self):
+    def user_consumption_report(self, total_avail_cpuh):
         print "%10s   %8s   %-12s" % ("Username", "Jobs", "Cpu_hours")
         print "-" * 42
         for key in sorted(self.jobs.keys()):
             print "%10s   %8d   %9.2f (%6.2f %%)" % (key, self.jobs[key], self.hours[key], self.hours[key]/self.total_compute_hours * 100)
         print "-" * 42
-        print "%10s   %8d   %9.2f (%6.2f %%)" % ("Total", self.total_entries, self.total_compute_hours, self.total_compute_hours/4166.40) # 416640 cpu hours in a week
+        print "%10s   %8d   %9.2f (%6.2f %%)" % ("Total", self.total_entries, self.total_compute_hours, 100 * self.total_compute_hours/total_avail_cpuh)
 
 
     def timelimit_histogram(self):
@@ -220,6 +225,12 @@ sacct_command.append("-S" + args.start)
 sacct_command.append("-E" + args.end)
 
 try:
+    start = parse_date(args.start)
+    end   = parse_date(args.end) + datetime.timedelta(days=1)
+    timedelta = end - start
+
+    total_avail_cpuh = int(config.get("general", "avail_cpu_number")) * timedelta.total_seconds() / 3600.0
+
     results = Statistics()
     for line in subprocess.check_output(sacct_command).split("\n"):
         if line: 
@@ -227,7 +238,7 @@ try:
 
     results.summary_report(config.get("general", "report_title"))
     print ""
-    results.user_consumption_report()
+    results.user_consumption_report(total_avail_cpuh)
     if args.histogram == 'elapsed' or args.histogram == 'all':
         print ""
         results.elapsed_histogram()
