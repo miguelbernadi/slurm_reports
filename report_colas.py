@@ -50,9 +50,44 @@ def parse_date(datestring):
     date_array = datestring.split("-")
     return datetime.date(int(date_array[0]),int(date_array[1]),int(date_array[2]))
 
+class UserRecord:
+    def __init__(self, name):
+        self.username = name
+        self.qos_jobs = {} # qos_name: [number, cpuh]
+        self.partition_jobs = {}
+
+    def add_record(self, cpu, cpu_hours, partition, qos):
+        if qos in self.qos_jobs:
+            q = self.qos_jobs[qos]
+            self.qos_jobs[qos] = [ q[0] + 1, q[1] + cpu_hours ]
+        else:
+            self.qos_jobs[qos] = [ 1, cpu_hours ]
+        if partition in self.partition_jobs:
+            p = self.partition_jobs[partition]
+            self.partition_jobs[partition] = [ p[0] + 1, p[1] + cpu_hours ]
+        else:
+            self.partition_jobs[partition] = [ 1, cpu_hours ]
+
+    def total_jobs(self):
+        count = 0
+        for i in self.partition_jobs.keys():
+            count += self.partition_jobs[i][0]
+        return count
+        
+    def total_cpuh(self):
+        count = 0
+        for i in self.partition_jobs.keys():
+            count += self.partition_jobs[i][1]
+        return count
+
+    def jobs_qos(self, qos):
+        return self.qos_jobs[qos]
+
+    def jobs_partition(self, partition):
+        return self.partition_jobs[partition]
+ 
 class Statistics:
-    jobs = {} #Hold per user entries
-    hours = {} #Hold per user entries
+    users = {} # hold user -> UserRecord relations
     times = [] # list of tuples (elapsed, timelimit, accuracy)
     total_entries = 0
     total_completed = 0
@@ -87,14 +122,9 @@ class Statistics:
 
     def count_per_user(self, username, cpu, duration, partition, qos): 
         cpu_hours = self.compute_cpu_hours(cpu, duration)
-        if username in self.jobs:
-            self.jobs[username] += 1
-        else:
-            self.jobs[username] = 1
-        if username in self.hours:
-            self.hours[username] += cpu_hours
-        else:
-            self.hours[username] = cpu_hours
+        if username not in self.users:
+            self.users[username] = UserRecord(username)
+        self.users[username].add_record(cpu, cpu_hours, partition, qos) 
 
     def compute_cpu_hours(self, cpu, duration):
         total = parse_time(duration) * int(cpu) / 3600.
@@ -137,11 +167,11 @@ class Statistics:
     def user_consumption_report(self, total_avail_cpuh):
         print "%10s   %8s   %-12s" % ("Username", "Jobs", "Cpu_hours")
         print "-" * 42
-        for key in sorted(self.jobs.keys()):
-            print "%10s   %8d   %9.2f (%6.2f %%)" % (key, self.jobs[key], self.hours[key], self.hours[key]/self.total_compute_hours * 100)
+        for key in sorted(self.users.keys()):
+            cpuh = self.users[key].total_cpuh()
+            print "%10s   %8d   %9.2f (%6.2f %%)" % (key, self.users[key].total_jobs(), cpuh, 100.0 * cpuh / self.total_compute_hours)
         print "-" * 42
-        print "%10s   %8d   %9.2f (%6.2f %%)" % ("Total", self.total_entries, self.total_compute_hours, 100 * self.total_compute_hours/total_avail_cpuh)
-
+        print "%10s   %8d   %9.2f (%6.2f %%)" % ("Total", self.total_entries, self.total_compute_hours, 100.0 * self.total_compute_hours / total_avail_cpuh)
 
     def timelimit_histogram(self):
         values, limits = np.histogram([i[1] for i in self.times],bins=time_bins)
