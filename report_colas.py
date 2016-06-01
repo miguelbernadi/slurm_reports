@@ -97,6 +97,8 @@ class Statistics:
     total_cancelled_auto = 0
     total_cancelled_user = 0
     total_running = 0
+    total_requeued = 0
+    total_pending = 0
     total_unknown = 0
     total_compute_hours = 0
     pattern_time = re.compile("[0-9]+")
@@ -144,6 +146,10 @@ class Statistics:
             self.total_cancelled_auto += 1
         elif job_status == "RUNNING":
             self.total_running += 1
+        elif job_status == "REQUEUED":
+            self.total_requeued += 1
+        elif job_status == "PENDING":
+            self.total_pending += 1
         elif self.pattern_cancelled_user.match(job_status): # CANCELLED by uid
             self.total_cancelled_user += 1
         else:
@@ -160,6 +166,8 @@ class Statistics:
         print "Jobs where the node failed:   %6d  (%6.2f %%)" % ( self.total_node_fail,      float(self.total_node_fail)/self.total_entries * 100 )
         print "Jobs cancelled automatically: %6d  (%6.2f %%)" % ( self.total_cancelled_auto, float(self.total_cancelled_auto)/self.total_entries * 100 )
         print "Jobs cancelled by user:       %6d  (%6.2f %%)" % ( self.total_cancelled_user, float(self.total_cancelled_user)/self.total_entries * 100 )
+        print "Jobs still pending:           %6d  (%6.2f %%)" % ( self.total_pending,        float(self.total_pending)/self.total_entries * 100 )
+        print "Jobs requeued:                %6d  (%6.2f %%)" % ( self.total_requeued,       float(self.total_requeued)/self.total_entries * 100 )
         print "Jobs still running:           %6d  (%6.2f %%)" % ( self.total_running,        float(self.total_running)/self.total_entries * 100 )
         if self.total_unknown > 0:
             print "WARNING: unknown state: %s"   % self.total_unknown
