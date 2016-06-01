@@ -8,8 +8,10 @@ Policy.
 
 ## Requirements
 
-It's a Python program. It's been developed using Python 2.7.6 and mainly uses
-Standard libraries.
+It's a Python program. It's been developed using Python 2.7.6 and uses Python's
+Standard libraries plus:
+
+* numpy (for histogram creation)
 
 # Installation
 
