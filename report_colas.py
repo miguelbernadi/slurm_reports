@@ -86,7 +86,7 @@ class UserRecord:
     def jobs_partition(self, partition):
         return self.partition_jobs[partition]
  
-class Statistics:
+class Report:
     users = {} # hold user -> UserRecord relations
     times = [] # list of tuples (elapsed, timelimit, accuracy)
     total_entries = 0
@@ -270,24 +270,24 @@ try:
 
     total_avail_cpuh = int(config.get("general", "avail_cpu_number")) * timedelta.total_seconds() / 3600.0
 
-    results = Statistics()
+    report = Report()
     sacct_command[0] = config.get("general", "sacct_path")
     for line in subprocess.check_output(sacct_command).split("\n"):
         if line: 
-            results.aggregate_job_data(line.split("|"))
+            report.aggregate_job_data(line.split("|"))
 
-    results.summary_report(config.get("general", "report_title"))
+    report.summary_report(config.get("general", "report_title"))
     print ""
-    results.user_consumption_report(total_avail_cpuh)
+    report.user_consumption_report(total_avail_cpuh)
     if args.histogram == 'elapsed' or args.histogram == 'all':
         print ""
-        results.elapsed_histogram()
+        report.elapsed_histogram()
     if args.histogram == 'timelimit' or args.histogram == 'all':
         print ""
-        results.timelimit_histogram()
+        report.timelimit_histogram()
     if args.histogram == 'accuracy' or args.histogram == 'all':
         print ""
-        results.accuracy_histogram()
+        report.accuracy_histogram()
 
 except subprocess.CalledProcessError as e:
     print "Execution error in:"
