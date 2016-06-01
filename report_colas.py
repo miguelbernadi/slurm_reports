@@ -13,7 +13,7 @@ import ConfigParser
 import datetime
 
 sacct_command = [
-                 "sacct",
+                 "", #Placeholder for sacct binary
                  "-a", 
                  "-o", 
                  "jobid,user,partition,qos,alloccpus,state,exitcode,elapsed,time", 
@@ -225,7 +225,7 @@ config = ConfigParser.SafeConfigParser(defaults, allow_no_value=True)
 config.add_section("general")
 config.set("general", "report_title", "Report")
 config.set("general", "configuration_file_path", "./config")
-config.set("general", "sacct_path", "sacct")
+config.set("general", "sacct_path", "/bin/sacct")
 
 # Parse options
 parser = argparse.ArgumentParser(description='Report on job scheduler usage')
