@@ -186,13 +186,14 @@ class Report:
 
     def user_consumption_report(self, total_avail_cpuh):
         """ Report that shows per user consumption """
-        print "%10s   %8s   %-12s" % ("Username", "Jobs", "Cpu_hours")
-        print "-" * 42
+        print "%10s   %19s   %20s" % ("Username", "Jobs", "Cpu_hours")
+        print "-" * 55
         for key in sorted(self.users.keys()):
+            jobs = self.users[key].total_jobs()
             cpuh = self.users[key].total_cpuh()
-            print "%10s   %8d   %9.2f (%6.2f %%)" % (key, self.users[key].total_jobs(), cpuh, 100.0 * cpuh / self.total_compute_hours)
-        print "-" * 42
-        print "%10s   %8d   %9.2f (%6.2f %%)" % ("Total", self.total_entries, self.total_compute_hours, 100.0 * self.total_compute_hours / total_avail_cpuh)
+            print "%10s   %8d (%6.2f %%)   %9.2f (%6.2f %%)" % (key, jobs, 100.0 * jobs / self.total_entries , cpuh, 100.0 * cpuh / self.total_compute_hours)
+        print "-" * 55
+        print     "%10s   %8d              %9.2f (%6.2f %%)" % ("Total", self.total_entries, self.total_compute_hours, 100.0 * self.total_compute_hours / total_avail_cpuh)
 
     def timelimit_histogram(self):
         """ Report showing a histogram table for time limits """
