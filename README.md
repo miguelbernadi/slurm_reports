@@ -15,36 +15,15 @@ Standard libraries plus:
 
 # Installation
 
-There is no real installation process required, but some configuration is
-needed for a successful run. You should have a Configuration file, either
-in the same directory as the command or in a configured address (can be
+There is no real installation process required, but some configuration may
+be needed for a successful run. You may have a Configuration file, either
+in the same directory as the command or in a configured path (can be
 overridden through a command-line option). No standard default has been
 set, so you could modify the code (to store conf in your $HOME):
 
 ```
 -config.set("general", "configuration_file_path", "./config")
 +config.set("general", "configuration_file_path", "/home/user/.slurm_report")
-```
-
-The minimal contents of the config file are:
-
-```
-[general]
-sacct_path=/bin/sacct
-```
-
-## Usage
-
-Show help:
-
-```
-    ./report_colas.py --help
-```
-
-Show standard report (using defaults):
-
-```
-    ./report_colas.py --start 2016-05-30 --end 2016-06-01
 ```
 
 ## Configuration file
@@ -58,7 +37,21 @@ avail_cpu_number=20
 sacct_path=/bin/sacct
 ```
 
-* sacct\_path: Path to the sacct command. This is the only mandatory option.
+* sacct\_path: Path to the sacct command. This is the option most likely to need configuration (default: /bin/sacct)
 * report\_title: Provides the title for the Report generated (default: Report)
 * avail\_cpu\_number: Number of CPUs available to compute the usage on the period (default: None)
+
+# Usage
+
+Show help:
+
+```
+    ./report_colas.py --help
+```
+
+Show standard report (using defaults):
+
+```
+    ./report_colas.py --start 2016-05-30 --end 2016-06-01
+```
 
