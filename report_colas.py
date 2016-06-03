@@ -42,9 +42,6 @@ def parse_time(timestring):
         hours = int(time[0]) * 3600
         minutes = int(time[1]) * 60
         seconds = int(time[2])
-    elif len(time) == 2:
-        minutes = int(time[0]) * 60
-        seconds = int(time[1])
     return days + hours + minutes + seconds
 
 def parse_date(datestring):
