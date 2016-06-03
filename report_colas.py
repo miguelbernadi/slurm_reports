@@ -192,41 +192,18 @@ class Report:
         print "-" * 55
         print     "%10s   %8d              %9.2f (%6.2f %%)" % ("Total", self.total_entries, self.total_compute_hours, 100.0 * self.total_compute_hours / total_avail_cpuh)
 
-    def timelimit_histogram(self):
-        """ Report showing a histogram table for time limits """
-        values, limits = np.histogram([i[1] for i in self.times],bins=time_bins)
-        print "Timelimit table"
-        print "%15s | %6s | %8s - %8s" % ("time (s)", "amount", "percent", "cumulat")
+    def histogram(self, title, header, bins):
+        """ Report showing a histogram table """
+        values, limits = np.histogram([i[2] for i in self.times],bins)
+        print title
+        print "%15s | %6s | %8s - %8s" % (header, "amount", "percent", "cumulat")
         print "-" * 46
         cum = 0
         for i in range(0, len(values)):
             percent = 100.0 * values[i] / self.total_completed
-            cum += percent
+            cum = 100.0  * sum(values[:i]) / self.total_completed
             print "%6d - %6d | %6d | %6.2f %% - %6.2f %%" % (limits[i], limits[i+1], values[i], percent, cum)
-
-    def elapsed_histogram(self):
-        """ Report showing a histogram table for elapsed time """
-        values, limits = np.histogram([i[0] for i in self.times],bins=time_bins)
-        print "Elapsed table"
-        print "%15s | %6s | %8s - %8s" % ("time (s)", "amount", "percent", "cumulat")
-        print "-" * 46
-        cum = 0
-        for i in range(0, len(values)):
-            percent = 100.0 * values[i] / self.total_completed
-            cum += percent
-            print "%6d - %6d | %6d | %6.2f %% - %6.2f %%" % (limits[i], limits[i+1], values[i], percent, cum)
-
-    def accuracy_histogram(self):
-        """ Report showing a histogram table for job time accuracy """
-        values, limits = np.histogram([i[2] for i in self.times],bins=[0,5,10,20,30,40,50,60,70,80,90,100,200,300,400,500,600,700,800,900,1000])
-        print "Accuracy table"
-        print "%13s | %6s | %8s - %8s" % ("accuracy (%)", "amount", "percent", "cumulat")
-        print "-" * 44
-        cum = 0
-        for i in range(0, len(values)):
-            percent = 100.0 * values[i] / self.total_completed
-            cum += percent
-            print "%5.0f - %5.0f | %6d | %6.2f %% - %6.2f %%" % (limits[i], limits[i+1], values[i], percent, cum)
+    
     
 def dump_configuration(config):
     """ Dump the configuration object's contents (debugging)"""
@@ -297,13 +274,13 @@ try:
     report.user_consumption_report(total_avail_cpuh)
     if args.histogram == 'elapsed' or args.histogram == 'all':
         print ""
-        report.elapsed_histogram()
+        report.histogram("Elapsed table", "time (s)", time_bins)
     if args.histogram == 'timelimit' or args.histogram == 'all':
         print ""
-        report.timelimit_histogram()
+        report.histogram("Timelimit table", "time (s)", time_bins)
     if args.histogram == 'accuracy' or args.histogram == 'all':
         print ""
-        report.accuracy_histogram()
+        report.histogram("Accuracy table", "accuracy (%)", [0,10,20,30,40,50,60,70,75,80,85,90,91,92,93,94,95,96,97,98,99,100,200])
 
 except subprocess.CalledProcessError as e:
     print "Execution error in:"
