@@ -124,10 +124,7 @@ class Report:
         duration = parse_time(job_fields[7])
         timelimit = parse_time(job_fields[8])
         if job_fields[5] == "COMPLETED":
-            if timelimit > 0:
-                accuracy = 100.0 * duration / timelimit
-            else:
-                accuracy = 0
+            accuracy = 100.0 * duration / timelimit
             self.times.append(tuple([duration, timelimit, accuracy]))
 
     def count_per_user(self, username, cpu, duration, partition, qos): 
