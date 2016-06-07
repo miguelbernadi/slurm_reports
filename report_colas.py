@@ -200,9 +200,8 @@ class Report:
         cum = 0
         for i in range(0, len(values)):
             percent = 100.0 * values[i] / self.total_completed
-            cum = 100.0  * sum(values[:i]) / self.total_completed
+            cum = 100.0  * sum(values[:i + 1]) / self.total_completed
             print "%6d - %6d | %6d | %6.2f %% - %6.2f %%" % (limits[i], limits[i+1], values[i], percent, cum)
-    
     
 def dump_configuration(config):
     """ Dump the configuration object's contents (debugging)"""
