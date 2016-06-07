@@ -163,20 +163,22 @@ class Report:
     def summary_report(self, title):
         """ Main report output, including overall job execution details """
         print title
-        print "Data gathered between %s - %s"    % (args.start, args.end)
-        print "-" * 48
-        print "Jobs submitted:               %6d  (%6.2f %%)" % ( self.total_entries,        float(self.total_entries)/self.total_entries * 100 )
-        print "Jobs executed successfully:   %6d  (%6.2f %%)" % ( self.total_completed,      float(self.total_completed)/self.total_entries * 100 )
-        print "Jobs executed but timed out:  %6d  (%6.2f %%)" % ( self.total_timeout,        float(self.total_timeout)/self.total_entries * 100 )
-        print "Jobs executed but failed:     %6d  (%6.2f %%)" % ( self.total_failed,         float(self.total_failed)/self.total_entries * 100 )
-        print "Jobs where the node failed:   %6d  (%6.2f %%)" % ( self.total_node_fail,      float(self.total_node_fail)/self.total_entries * 100 )
-        print "Jobs cancelled automatically: %6d  (%6.2f %%)" % ( self.total_cancelled_auto, float(self.total_cancelled_auto)/self.total_entries * 100 )
-        print "Jobs cancelled by user:       %6d  (%6.2f %%)" % ( self.total_cancelled_user, float(self.total_cancelled_user)/self.total_entries * 100 )
-        print "Jobs still pending:           %6d  (%6.2f %%)" % ( self.total_pending,        float(self.total_pending)/self.total_entries * 100 )
-        print "Jobs requeued:                %6d  (%6.2f %%)" % ( self.total_requeued,       float(self.total_requeued)/self.total_entries * 100 )
-        print "Jobs still running:           %6d  (%6.2f %%)" % ( self.total_running,        float(self.total_running)/self.total_entries * 100 )
+        print "Report generated on                    %s" % datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
+        print "Data gathered between           %s - %s"    % (args.start, args.end)
+        print "-" * 55
+        print "Jobs submitted:                      %6d  (%6.2f %%)" % ( self.total_entries,        float(self.total_entries)/self.total_entries * 100 )
+        print "Jobs executed successfully:          %6d  (%6.2f %%)" % ( self.total_completed,      float(self.total_completed)/self.total_entries * 100 )
+        print "Jobs executed but timed out:         %6d  (%6.2f %%)" % ( self.total_timeout,        float(self.total_timeout)/self.total_entries * 100 )
+        print "Jobs executed but failed:            %6d  (%6.2f %%)" % ( self.total_failed,         float(self.total_failed)/self.total_entries * 100 )
+        print "Jobs where the node failed:          %6d  (%6.2f %%)" % ( self.total_node_fail,      float(self.total_node_fail)/self.total_entries * 100 )
+        print "Jobs cancelled automatically:        %6d  (%6.2f %%)" % ( self.total_cancelled_auto, float(self.total_cancelled_auto)/self.total_entries * 100 )
+        print "Jobs cancelled by user:              %6d  (%6.2f %%)" % ( self.total_cancelled_user, float(self.total_cancelled_user)/self.total_entries * 100 )
+        print "Jobs still pending:                  %6d  (%6.2f %%)" % ( self.total_pending,        float(self.total_pending)/self.total_entries * 100 )
+        print "Jobs requeued:                       %6d  (%6.2f %%)" % ( self.total_requeued,       float(self.total_requeued)/self.total_entries * 100 )
+        print "Jobs still running:                  %6d  (%6.2f %%)" % ( self.total_running,        float(self.total_running)/self.total_entries * 100 )
         if self.total_unknown > 0:
             print "WARNING: unknown state: %s"   % self.total_unknown
+        print "-" * 55
 
     def user_consumption_report(self, total_avail_cpuh):
         """ Report that shows per user consumption """
