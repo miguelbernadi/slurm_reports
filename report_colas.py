@@ -12,43 +12,6 @@ import ConfigParser
 #Handle dates
 import datetime
 
-sacct_command = [
-                 "", #Placeholder for sacct binary
-                 "-a", 
-                 "-o", 
-                 "jobid,user,partition,qos,alloccpus,state,exitcode,elapsed,time", 
-                 "--noheader", 
-                 "-X", 
-                 "-P"
-                ]
-
-#                         10m  20m  30m   1h   2h    3h    4h    5h    6h    7h    8h    9h   10h   11h   12h   24h    48h    72h     7d
-time_bins = [0,60,120,300,600,1200,1800,3600,7200,10800,14400,18000,21600,25200,28800,32400,36000,39600,43200,86400,172800,259200,604800]
-pattern_date_format = re.compile("^20[0-9][0-9]-[0-9]+-[0-9]+$")
-pattern_time = re.compile("[0-9]+")
-def parse_time(timestring):
-    """ Parse a string representing the duration of a job into a number of seconds elapsed. Supplied string is of format 00-00:00:00 """
-    days = 0
-    hours = 0
-    minutes = 0
-    seconds = 0
-    time = pattern_time.findall(timestring)
-    if len(time) == 4:
-        days = int(time[0]) * 24 * 3600
-        hours = int(time[1]) * 3600
-        minutes = int(time[2]) * 60
-        seconds = int(time[3])
-    elif len(time) == 3:
-        hours = int(time[0]) * 3600
-        minutes = int(time[1]) * 60
-        seconds = int(time[2])
-    return days + hours + minutes + seconds
-
-def parse_date(datestring):
-    """ Convert a string representing a date to a naive datetime object """
-    date_array = datestring.split("-")
-    return datetime.date(int(date_array[0]),int(date_array[1]),int(date_array[2]))
-
 class UserRecord:
     """ Structure to store aggregated job record statistics on a user basis """
     def __init__(self, name):
@@ -215,6 +178,29 @@ def dump_configuration(config):
         for element in config.items(section):
             print section, element
 
+def parse_time(timestring):
+    """ Parse a string representing the duration of a job into a number of seconds elapsed. Supplied string is of format 00-00:00:00 """
+    days = 0
+    hours = 0
+    minutes = 0
+    seconds = 0
+    time = pattern_time.findall(timestring)
+    if len(time) == 4:
+        days = int(time[0]) * 24 * 3600
+        hours = int(time[1]) * 3600
+        minutes = int(time[2]) * 60
+        seconds = int(time[3])
+    elif len(time) == 3:
+        hours = int(time[0]) * 3600
+        minutes = int(time[1]) * 60
+        seconds = int(time[2])
+    return days + hours + minutes + seconds
+
+def parse_date(datestring):
+    """ Convert a string representing a date to a naive datetime object """
+    date_array = datestring.split("-")
+    return datetime.date(int(date_array[0]),int(date_array[1]),int(date_array[2]))
+
 def valid_date_string(string):
     """ Verify if the supplied string is a validly formatted date """
     if not pattern_date_format.match(string):
@@ -243,6 +229,20 @@ def args_histo(args):
         report.histogram("Accuracy table", "accuracy (%)", [0,10,20,30,40,50,60,70,75,80,85,90,91,92,93,94,95,96,97,98,99,100,200])
 
 # Main
+sacct_command = [
+                 "", #Placeholder for sacct binary
+                 "-a",
+                 "-o",
+                 "jobid,user,partition,qos,alloccpus,state,exitcode,elapsed,time",
+                 "--noheader",
+                 "-X",
+                 "-P"
+                ]
+
+#                         10m  20m  30m   1h   2h    3h    4h    5h    6h    7h    8h    9h   10h   11h   12h   24h    48h    72h     7d
+time_bins = [0,60,120,300,600,1200,1800,3600,7200,10800,14400,18000,21600,25200,28800,32400,36000,39600,43200,86400,172800,259200,604800]
+pattern_date_format = re.compile("^20[0-9][0-9]-[0-9]+-[0-9]+$")
+pattern_time = re.compile("[0-9]+")
 
 # Configuration defaults
 defaults = {}
