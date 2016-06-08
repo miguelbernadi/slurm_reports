@@ -229,7 +229,6 @@ defaults = {}
 config = ConfigParser.SafeConfigParser(defaults, allow_no_value=True)
 config.add_section("general")
 config.set("general", "report_title", "Report")
-config.set("general", "configuration_file_path", "./config")
 config.set("general", "sacct_path", "/bin/sacct")
 
 # Parse options
@@ -237,18 +236,15 @@ parser = argparse.ArgumentParser(description='Report on job scheduler usage')
 parser.add_argument('--start',       help='Date where the period starts', required=True, action='store', type=valid_date_string)
 parser.add_argument('--end',         help='Date where the period ends',   required=True, action='store', type=valid_date_string)
 parser.add_argument('-u', '--user',  help='Analyze a specific user',      action='store', nargs='*')
-parser.add_argument('-c', '--config',help='Path to config file',          action='store')
+parser.add_argument('-c', '--config',help='Path to config file',          action='store', default='./config')
 parser.add_argument('--debug',       help='Print lots of internal information', action="store_true")
 parser.add_argument('--histogram',   help='Add histogram reports', choices=['all','none','timelimit','elapsed','accuracy'], default='all')
 
 args = parser.parse_args()
 
-# Override configuration file location
-if args.config != None:
-    config.set("general", "configuration_file_path", args.config)
 
 # Read configuration file 
-config.read(config.get("general", "configuration_file_path"))
+config.read(args.config)
 
 # Apply cli options
 if args.debug:
