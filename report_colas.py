@@ -222,6 +222,26 @@ def valid_date_string(string):
          raise argparse.ArgumentTypeError(msg)
     return string
 
+def args_report(args):
+    """ Present the appropriate reports depending on CLI options """
+    if args.mode == "summary" or args.mode == "all":
+        report.summary_report(config.get("general", "report_title"))
+        print ""
+    if args.mode == "user" or args.mode == "all":
+        report.user_consumption_report(total_avail_cpuh)
+
+def args_histo(args):
+    """ Present the appropriate histograms depending on CLI options """
+    if args.mode == 'elapsed' or args.mode == 'all':
+        print ""
+        report.histogram("Elapsed table", "time (s)", time_bins)
+    if args.mode == 'timelimit' or args.mode == 'all':
+        print ""
+        report.histogram("Timelimit table", "time (s)", time_bins)
+    if args.mode == 'accuracy' or args.mode == 'all':
+        print ""
+        report.histogram("Accuracy table", "accuracy (%)", [0,10,20,30,40,50,60,70,75,80,85,90,91,92,93,94,95,96,97,98,99,100,200])
+
 # Main
 
 # Configuration defaults
@@ -238,10 +258,17 @@ parser.add_argument('--end',         help='Date where the period ends',   requir
 parser.add_argument('-u', '--user',  help='Analyze a specific user',      action='store', nargs='*')
 parser.add_argument('-c', '--config',help='Path to config file',          action='store', default='./config')
 parser.add_argument('--debug',       help='Print lots of internal information', action="store_true")
-parser.add_argument('--histogram',   help='Add histogram reports', choices=['all','none','timelimit','elapsed','accuracy'], default='all')
+subparsers = parser.add_subparsers(title='subcommands')
+
+parser_histo = subparsers.add_parser('histogram')
+parser_histo.set_defaults(func=args_histo)
+parser_histo.add_argument('--mode',   help='Histogram modes', choices=['all','none','timelimit','elapsed','accuracy'], default='all')
+
+parser_report = subparsers.add_parser('report')
+parser_report.set_defaults(func=args_report)
+parser_report.add_argument('--mode',   help='Report modes', choices=['all','summary','user'], default='all')
 
 args = parser.parse_args()
-
 
 # Read configuration file 
 config.read(args.config)
@@ -264,24 +291,13 @@ try:
     total_avail_cpuh = int(config.get("general", "avail_cpu_number")) * timedelta.total_seconds() / 3600.0
 
     data = Data()
-    report = Report(data)
     sacct_command[0] = config.get("general", "sacct_path")
     for line in subprocess.check_output(sacct_command).split("\n"):
         if line: 
             data.aggregate_job_data(line.split("|"))
 
-    report.summary_report(config.get("general", "report_title"))
-    print ""
-    report.user_consumption_report(total_avail_cpuh)
-    if args.histogram == 'elapsed' or args.histogram == 'all':
-        print ""
-        report.histogram("Elapsed table", "time (s)", time_bins)
-    if args.histogram == 'timelimit' or args.histogram == 'all':
-        print ""
-        report.histogram("Timelimit table", "time (s)", time_bins)
-    if args.histogram == 'accuracy' or args.histogram == 'all':
-        print ""
-        report.histogram("Accuracy table", "accuracy (%)", [0,10,20,30,40,50,60,70,75,80,85,90,91,92,93,94,95,96,97,98,99,100,200])
+    report = Report(data)
+    args.func(args)
 
 except subprocess.CalledProcessError as e:
     print "Execution error in:"
