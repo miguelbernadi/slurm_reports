@@ -89,8 +89,8 @@ class UserRecord:
     def jobs_partition(self, partition):
         return self.partition_jobs[partition]
  
-class Report:
-    """ Analyses the data and displays formatted results """
+class Data:
+    """ Stores the analysed data """
     users = {} # hold user -> UserRecord relations
     times = [] # list of tuples (elapsed, timelimit, accuracy)
     total_entries = 0
@@ -160,47 +160,53 @@ class Report:
         else:
             self.total_unknown += 1
 
+class Report:
+    """ Displays results """
+
+    def __init__(self, data):
+        self.data = data
+
     def summary_report(self, title):
         """ Main report output, including overall job execution details """
         print title
         print "Report generated on                    %s" % datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
         print "Data gathered between           %s - %s"    % (args.start, args.end)
         print "-" * 55
-        print "Jobs submitted:                      %6d  (%6.2f %%)" % ( self.total_entries,        float(self.total_entries)/self.total_entries * 100 )
-        print "Jobs executed successfully:          %6d  (%6.2f %%)" % ( self.total_completed,      float(self.total_completed)/self.total_entries * 100 )
-        print "Jobs executed but timed out:         %6d  (%6.2f %%)" % ( self.total_timeout,        float(self.total_timeout)/self.total_entries * 100 )
-        print "Jobs executed but failed:            %6d  (%6.2f %%)" % ( self.total_failed,         float(self.total_failed)/self.total_entries * 100 )
-        print "Jobs where the node failed:          %6d  (%6.2f %%)" % ( self.total_node_fail,      float(self.total_node_fail)/self.total_entries * 100 )
-        print "Jobs cancelled automatically:        %6d  (%6.2f %%)" % ( self.total_cancelled_auto, float(self.total_cancelled_auto)/self.total_entries * 100 )
-        print "Jobs cancelled by user:              %6d  (%6.2f %%)" % ( self.total_cancelled_user, float(self.total_cancelled_user)/self.total_entries * 100 )
-        print "Jobs still pending:                  %6d  (%6.2f %%)" % ( self.total_pending,        float(self.total_pending)/self.total_entries * 100 )
-        print "Jobs requeued:                       %6d  (%6.2f %%)" % ( self.total_requeued,       float(self.total_requeued)/self.total_entries * 100 )
-        print "Jobs still running:                  %6d  (%6.2f %%)" % ( self.total_running,        float(self.total_running)/self.total_entries * 100 )
-        if self.total_unknown > 0:
-            print "WARNING: unknown state: %s"   % self.total_unknown
+        print "Jobs submitted:                      %6d  (%6.2f %%)" % ( self.data.total_entries,        float(self.data.total_entries)        / self.data.total_entries * 100 )
+        print "Jobs executed successfully:          %6d  (%6.2f %%)" % ( self.data.total_completed,      float(self.data.total_completed)      / self.data.total_entries * 100 )
+        print "Jobs executed but timed out:         %6d  (%6.2f %%)" % ( self.data.total_timeout,        float(self.data.total_timeout)        / self.data.total_entries * 100 )
+        print "Jobs executed but failed:            %6d  (%6.2f %%)" % ( self.data.total_failed,         float(self.data.total_failed)         / self.data.total_entries * 100 )
+        print "Jobs where the node failed:          %6d  (%6.2f %%)" % ( self.data.total_node_fail,      float(self.data.total_node_fail)      / self.data.total_entries * 100 )
+        print "Jobs cancelled automatically:        %6d  (%6.2f %%)" % ( self.data.total_cancelled_auto, float(self.data.total_cancelled_auto) / self.data.total_entries * 100 )
+        print "Jobs cancelled by user:              %6d  (%6.2f %%)" % ( self.data.total_cancelled_user, float(self.data.total_cancelled_user) / self.data.total_entries * 100 )
+        print "Jobs still pending:                  %6d  (%6.2f %%)" % ( self.data.total_pending,        float(self.data.total_pending)        / self.data.total_entries * 100 )
+        print "Jobs requeued:                       %6d  (%6.2f %%)" % ( self.data.total_requeued,       float(self.data.total_requeued)       / self.data.total_entries * 100 )
+        print "Jobs still running:                  %6d  (%6.2f %%)" % ( self.data.total_running,        float(self.data.total_running)        / self.data.total_entries * 100 )
+        if self.data.total_unknown > 0:
+            print "WARNING: unknown state: %s"   % self.data.total_unknown
         print "-" * 55
 
     def user_consumption_report(self, total_avail_cpuh):
         """ Report that shows per user consumption """
         print "%10s   %19s   %20s" % ("Username", "Jobs", "Cpu_hours")
         print "-" * 55
-        for key in sorted(self.users.keys()):
-            jobs = self.users[key].total_jobs()
-            cpuh = self.users[key].total_cpuh()
-            print "%10s   %8d (%6.2f %%)   %9.2f (%6.2f %%)" % (key, jobs, 100.0 * jobs / self.total_entries , cpuh, 100.0 * cpuh / self.total_compute_hours)
+        for key in sorted(self.data.users.keys()):
+            jobs = self.data.users[key].total_jobs()
+            cpuh = self.data.users[key].total_cpuh()
+            print "%10s   %8d (%6.2f %%)   %9.2f (%6.2f %%)" % (key, jobs, 100.0 * jobs / self.data.total_entries , cpuh, 100.0 * cpuh / self.data.total_compute_hours)
         print "-" * 55
-        print     "%10s   %8d              %9.2f (%6.2f %%)" % ("Total", self.total_entries, self.total_compute_hours, 100.0 * self.total_compute_hours / total_avail_cpuh)
+        print     "%10s   %8d              %9.2f (%6.2f %%)" % ("Total", self.data.total_entries, self.data.total_compute_hours, 100.0 * self.data.total_compute_hours / total_avail_cpuh)
 
     def histogram(self, title, header, bins):
         """ Report showing a histogram table """
-        values, limits = np.histogram([i[2] for i in self.times],bins)
+        values, limits = np.histogram([i[2] for i in self.data.times],bins)
         print title
         print "%15s | %6s | %8s - %8s" % (header, "amount", "percent", "cumulat")
         print "-" * 46
         cum = 0
         for i in range(0, len(values)):
-            percent = 100.0 * values[i] / self.total_completed
-            cum = 100.0  * sum(values[:i + 1]) / self.total_completed
+            percent = 100.0 * values[i] / self.data.total_completed
+            cum = 100.0  * sum(values[:i + 1]) / self.data.total_completed
             print "%6d - %6d | %6d | %6.2f %% - %6.2f %%" % (limits[i], limits[i+1], values[i], percent, cum)
     
 def dump_configuration(config):
@@ -261,11 +267,12 @@ try:
 
     total_avail_cpuh = int(config.get("general", "avail_cpu_number")) * timedelta.total_seconds() / 3600.0
 
-    report = Report()
+    data = Data()
+    report = Report(data)
     sacct_command[0] = config.get("general", "sacct_path")
     for line in subprocess.check_output(sacct_command).split("\n"):
         if line: 
-            report.aggregate_job_data(line.split("|"))
+            data.aggregate_job_data(line.split("|"))
 
     report.summary_report(config.get("general", "report_title"))
     print ""
