@@ -180,21 +180,11 @@ def dump_configuration(config):
 
 def parse_time(timestring):
     """ Parse a string representing the duration of a job into a number of seconds elapsed. Supplied string is of format 00-00:00:00 """
-    days = 0
-    hours = 0
-    minutes = 0
-    seconds = 0
     time = pattern_time.findall(timestring)
     if len(time) == 4:
-        days = int(time[0]) * 24 * 3600
-        hours = int(time[1]) * 3600
-        minutes = int(time[2]) * 60
-        seconds = int(time[3])
+        return int(time[0]) * 24 * 3600 + int(time[1]) * 3600 + int(time[2]) * 60 + int(time[3])
     elif len(time) == 3:
-        hours = int(time[0]) * 3600
-        minutes = int(time[1]) * 60
-        seconds = int(time[2])
-    return days + hours + minutes + seconds
+        return int(time[0]) * 3600 + int(time[1]) * 60 + int(time[2])
 
 def parse_date(datestring):
     """ Convert a string representing a date to a naive datetime object """
