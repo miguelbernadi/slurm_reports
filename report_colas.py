@@ -160,9 +160,9 @@ class Report:
         print "-" * 55
         print     "%10s   %8d              %9.2f (%6.2f %%)" % ("Total", self.data.total_entries, self.data.total_compute_hours, 100.0 * self.data.total_compute_hours / total_avail_cpuh)
 
-    def histogram(self, title, header, bins):
+    def histogram(self, title, header, bins, data):
         """ Report showing a histogram table """
-        values, limits = np.histogram([i[2] for i in self.data.times],bins)
+        values, limits = np.histogram(data, bins)
         print title
         print "%15s | %6s | %8s - %8s" % (header, "amount", "percent", "cumulat")
         print "-" * 46
@@ -210,13 +210,13 @@ def args_histo(args):
     """ Present the appropriate histograms depending on CLI options """
     if args.mode == 'elapsed' or args.mode == 'all':
         print ""
-        report.histogram("Elapsed table", "time (s)", time_bins)
+        report.histogram("Elapsed table", "time (s)", time_bins, [i[0] for i in report.data.times])
     if args.mode == 'timelimit' or args.mode == 'all':
         print ""
-        report.histogram("Timelimit table", "time (s)", time_bins)
+        report.histogram("Timelimit table", "time (s)", time_bins, [i[1] for i in report.data.times])
     if args.mode == 'accuracy' or args.mode == 'all':
         print ""
-        report.histogram("Accuracy table", "accuracy (%)", [0,10,20,30,40,50,60,70,75,80,85,90,91,92,93,94,95,96,97,98,99,100,200])
+        report.histogram("Accuracy table", "accuracy (%)", [0,10,20,30,40,50,60,70,75,80,85,90,91,92,93,94,95,96,97,98,99,100,200], [i[2] for i in report.data.times])
 
 # Main
 sacct_command = [
