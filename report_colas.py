@@ -123,6 +123,18 @@ class Data:
         else:
             self.total_unknown += 1
 
+    def get_elapsed_values(self):
+        """ Return array containing elapsed times for all jobs in set """
+        return [i[0] for i in self.times]
+
+    def get_timelimit_values(self):
+        """ Return array containing timelimit times for all jobs in set """
+        return [i[1] for i in self.times]
+
+    def get_accuracy_values(self):
+        """ Return array containing accuracy values for all jobs in set """
+        return [i[2] for i in self.times]
+
 class Report:
     """ Displays results """
 
@@ -210,13 +222,13 @@ def args_histo(args):
     """ Present the appropriate histograms depending on CLI options """
     if args.mode == 'elapsed' or args.mode == 'all':
         print ""
-        report.histogram("Elapsed table", "time (s)", time_bins, [i[0] for i in report.data.times])
+        report.histogram("Elapsed table", "time (s)", time_bins, report.data.get_elapsed_values())
     if args.mode == 'timelimit' or args.mode == 'all':
         print ""
-        report.histogram("Timelimit table", "time (s)", time_bins, [i[1] for i in report.data.times])
+        report.histogram("Timelimit table", "time (s)", time_bins, report.data.get_timelimit_values())
     if args.mode == 'accuracy' or args.mode == 'all':
         print ""
-        report.histogram("Accuracy table", "accuracy (%)", [0,10,20,30,40,50,60,70,75,80,85,90,91,92,93,94,95,96,97,98,99,100,200], [i[2] for i in report.data.times])
+        report.histogram("Accuracy table", "accuracy (%)", [0,10,20,30,40,50,60,70,75,80,85,90,91,92,93,94,95,96,97,98,99,100,200], report.data.get_accuracy_values())
 
 # Main
 sacct_command = [
