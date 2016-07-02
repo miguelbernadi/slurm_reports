@@ -10,6 +10,7 @@ import ConfigParser
 import datetime
 
 def cli():
+    """ Entrypoint for the CLI tool """
     Slurm_Reports().main()
 
 class UserRecord(object):
@@ -38,7 +39,7 @@ class UserRecord(object):
         for i in self.partition_jobs.keys():
             count += self.partition_jobs[i][0]
         return count
-        
+
     def total_cpuh(self):
         """ Return the number of compute hours recorded for the user """
         count = 0
@@ -51,7 +52,7 @@ class UserRecord(object):
 
     def jobs_partition(self, partition):
         return self.partition_jobs[partition]
- 
+
 class Data(object):
     """ Stores the analysed data """
     users = {} # hold user -> UserRecord relations
@@ -86,19 +87,19 @@ class Data(object):
         partition = job_fields[2]
         cpus = job_fields[4]
         self.count_job_status(job_fields[5])
-      
+
         duration = parse_time(job_fields[7])
         timelimit = parse_time(job_fields[8])
         if job_fields[5] == "COMPLETED":
             accuracy = 100.0 * duration / timelimit
             self.times.append(tuple([duration, timelimit, accuracy]))
 
-    def count_per_user(self, username, cpu, duration, partition, qos): 
+    def count_per_user(self, username, cpu, duration, partition, qos):
         """ Create per user recordings of job statistics """
         cpu_hours = self.compute_cpu_hours(cpu, duration)
         if username not in self.users:
             self.users[username] = UserRecord(username)
-        self.users[username].add_record(cpu, cpu_hours, partition, qos) 
+        self.users[username].add_record(cpu, cpu_hours, partition, qos)
 
     def compute_cpu_hours(self, cpu, duration):
         """ Compute the cpu hours of a job """
@@ -195,7 +196,7 @@ pattern_time = re.compile("[0-9]+")
 def parse_date(datestring):
     """ Convert a string representing a date to a naive datetime object """
     date_array = datestring.split("-")
-    return datetime.date(int(date_array[0]),int(date_array[1]),int(date_array[2]))
+    return datetime.date(int(date_array[0]), int(date_array[1]), int(date_array[2]))
 
 def parse_time(timestring):
     """
@@ -221,14 +222,18 @@ class Slurm_Reports(object):
         ]
         defaults = {}
         self.config = ConfigParser.SafeConfigParser(defaults, allow_no_value=True)
-
-        #                         10m  20m  30m   1h   2h    3h    4h    5h    6h    7h    8h    9h   10h   11h   12h   24h    48h    72h     7d
-        self.time_bins = [0,60,120,300,600,1200,1800,3600,7200,10800,14400,18000,21600,25200,28800,32400,36000,39600,43200,86400,172800,259200,604800]
+        self.time_bins = [
+            0, 60, 120, 300, 600, 1200, 1800, 3600, # 10m, 20m, 30m, 1h
+            7200, 10800, 14400, 18000, 21600, # 2h, 3h, 4h, 5h, 6h,
+            25200, 28800, 32400, 36000, 39600, # 7h, 8h, 9h, 10h, 11h
+            43200, 86400, 172800, 259200, 604800 # 12h, 24h, 48h, 72h, 7d
+        ]
         self.pattern_date_format = re.compile("^20[0-9][0-9]-[0-9]+-[0-9]+$")
         self.args = self.parse_args()
         self.report = ""
 
     def parse_args(self):
+        """ Parse the CLI arguments """
         # Parse options
         parser = argparse.ArgumentParser(description='Report on job scheduler usage')
         parser.add_argument('--start', help='Date where the period starts',
