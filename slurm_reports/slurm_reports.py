@@ -1,6 +1,3 @@
-#!/usr/bin/env python
-
-import sys
 import argparse
 #Calling sacct
 import subprocess
@@ -11,6 +8,9 @@ import numpy as np
 import ConfigParser
 #Handle dates
 import datetime
+
+def cli():
+    Slurm_Reports().main()
 
 class UserRecord(object):
     """ Structure to store aggregated job record statistics on a user basis """
@@ -189,126 +189,144 @@ class Report(object):
             percent = 100.0 * values[i] / self.data.total_completed
             cum = 100.0  * sum(values[:i + 1]) / self.data.total_completed
             print "%6d - %6d | %6d | %6.2f %% - %6.2f %%" % (limits[i], limits[i+1], values[i], percent, cum)
-    
-def dump_configuration(config):
-    """ Dump the configuration object's contents (debugging)"""
-    for section in config.sections():
-        for element in config.items(section):
-            print section, element
 
-def parse_time(timestring):
-    """ Parse a string representing the duration of a job into a number of seconds elapsed. Supplied string is of format 00-00:00:00 """
-    time = pattern_time.findall(timestring)
-    if len(time) == 4:
-        return int(time[0]) * 24 * 3600 + int(time[1]) * 3600 + int(time[2]) * 60 + int(time[3])
-    elif len(time) == 3:
-        return int(time[0]) * 3600 + int(time[1]) * 60 + int(time[2])
+pattern_time = re.compile("[0-9]+")
 
 def parse_date(datestring):
     """ Convert a string representing a date to a naive datetime object """
     date_array = datestring.split("-")
     return datetime.date(int(date_array[0]),int(date_array[1]),int(date_array[2]))
 
-def valid_date_string(string):
-    """ Verify if the supplied string is a validly formatted date """
-    if not pattern_date_format.match(string):
-         msg="%r is not a valid date string. Format is YYYY-MM-DD" % string
-         raise argparse.ArgumentTypeError(msg)
-    return string
+def parse_time(timestring):
+    """
+    Parse a string representing the duration of a job into a number of
+    seconds elapsed. Supplied string is of format 00-00:00:00
+    """
+    time = pattern_time.findall(timestring)
+    if len(time) == 4:
+        return int(time[0]) * 24 * 3600 + int(time[1]) * 3600 + int(time[2]) * 60 + int(time[3])
+    elif len(time) == 3:
+        return int(time[0]) * 3600 + int(time[1]) * 60 + int(time[2])
 
-def args_report(args):
-    """ Present the appropriate reports depending on CLI options """
-    if args.mode == "summary" or args.mode == "all":
-        report.summary_report(config.get("general", "report_title"))
-        print ""
-    if args.mode == "user" or args.mode == "all":
-        report.user_consumption_report()
+class Slurm_Reports(object):
+    def __init__(self):
+        self.sacct_command = [
+            "", #Placeholder for sacct binary
+            "-a",
+            "-o",
+            "jobid,user,partition,qos,alloccpus,state,exitcode,elapsed,time",
+            "--noheader",
+            "-X",
+            "-P"
+        ]
+        defaults = {}
+        self.config = ConfigParser.SafeConfigParser(defaults, allow_no_value=True)
 
-def args_histo(args):
-    """ Present the appropriate histograms depending on CLI options """
-    if args.mode == 'elapsed' or args.mode == 'all':
-        print ""
-        report.histogram("Elapsed table", "time (s)", time_bins, report.data.get_elapsed_values())
-    if args.mode == 'timelimit' or args.mode == 'all':
-        print ""
-        report.histogram("Timelimit table", "time (s)", time_bins, report.data.get_timelimit_values())
-    if args.mode == 'accuracy' or args.mode == 'all':
-        print ""
-        report.histogram("Accuracy table", "accuracy (%)", [0,10,20,30,40,50,60,70,75,80,85,90,91,92,93,94,95,96,97,98,99,100,200], report.data.get_accuracy_values())
+        #                         10m  20m  30m   1h   2h    3h    4h    5h    6h    7h    8h    9h   10h   11h   12h   24h    48h    72h     7d
+        self.time_bins = [0,60,120,300,600,1200,1800,3600,7200,10800,14400,18000,21600,25200,28800,32400,36000,39600,43200,86400,172800,259200,604800]
+        self.pattern_date_format = re.compile("^20[0-9][0-9]-[0-9]+-[0-9]+$")
+        self.args = self.parse_args()
+        self.report = ""
 
-# Main
-sacct_command = [
-                 "", #Placeholder for sacct binary
-                 "-a",
-                 "-o",
-                 "jobid,user,partition,qos,alloccpus,state,exitcode,elapsed,time",
-                 "--noheader",
-                 "-X",
-                 "-P"
-                ]
+    def parse_args(self):
+        # Parse options
+        parser = argparse.ArgumentParser(description='Report on job scheduler usage')
+        parser.add_argument('--start', help='Date where the period starts',
+                            required=True, action='store', type=self.valid_date_string)
+        parser.add_argument('--end', help='Date where the period ends',
+                            required=True, action='store', type=self.valid_date_string)
+        parser.add_argument('-u', '--user', help='Analyze a specific user',
+                            action='store', nargs='+')
+        parser.add_argument('-c', '--config', help='Path to config file',
+                            action='store', default='./config')
+        parser.add_argument('--debug', help='Print lots of internal information',
+                            action="store_true")
+        subparsers = parser.add_subparsers(title='subcommands')
 
-#                         10m  20m  30m   1h   2h    3h    4h    5h    6h    7h    8h    9h   10h   11h   12h   24h    48h    72h     7d
-time_bins = [0,60,120,300,600,1200,1800,3600,7200,10800,14400,18000,21600,25200,28800,32400,36000,39600,43200,86400,172800,259200,604800]
-pattern_date_format = re.compile("^20[0-9][0-9]-[0-9]+-[0-9]+$")
-pattern_time = re.compile("[0-9]+")
+        parser_histo = subparsers.add_parser('histogram')
+        parser_histo.set_defaults(func=self.args_histo)
+        parser_histo.add_argument('--mode', help='Histogram modes',
+                                  choices=['all', 'none', 'timelimit', 'elapsed', 'accuracy'],
+                                  default='all')
 
-# Configuration defaults
-defaults = {}
-config = ConfigParser.SafeConfigParser(defaults, allow_no_value=True)
-config.add_section("general")
-config.set("general", "report_title", "Report")
-config.set("general", "sacct_path", "/bin/sacct")
+        parser_report = subparsers.add_parser('report')
+        parser_report.set_defaults(func=self.args_report)
+        parser_report.add_argument('--mode', help='Report modes',
+                                   choices=['all', 'summary', 'user'], default='all')
 
-# Parse options
-parser = argparse.ArgumentParser(description='Report on job scheduler usage')
-parser.add_argument('--start',       help='Date where the period starts', required=True, action='store', type=valid_date_string)
-parser.add_argument('--end',         help='Date where the period ends',   required=True, action='store', type=valid_date_string)
-parser.add_argument('-u', '--user',  help='Analyze a specific user',      action='store', nargs='+')
-parser.add_argument('-c', '--config',help='Path to config file',          action='store', default='./config')
-parser.add_argument('--debug',       help='Print lots of internal information', action="store_true")
-subparsers = parser.add_subparsers(title='subcommands')
+        return parser.parse_args()
 
-parser_histo = subparsers.add_parser('histogram')
-parser_histo.set_defaults(func=args_histo)
-parser_histo.add_argument('--mode',   help='Histogram modes', choices=['all','none','timelimit','elapsed','accuracy'], default='all')
+    def dump_configuration(self):
+        """ Dump the configuration object's contents (debugging)"""
+        for section in self.config.sections():
+            for element in self.config.items(section):
+                print section, element
 
-parser_report = subparsers.add_parser('report')
-parser_report.set_defaults(func=args_report)
-parser_report.add_argument('--mode',   help='Report modes', choices=['all','summary','user'], default='all')
+    def valid_date_string(self, string):
+        """ Verify if the supplied string is a validly formatted date """
+        if not self.pattern_date_format.match(string):
+            msg = "%r is not a valid date string. Format is YYYY-MM-DD" % string
+            raise argparse.ArgumentTypeError(msg)
+        return string
 
-args = parser.parse_args()
+    def args_report(self):
+        """ Present the appropriate reports depending on CLI options """
+        if self.args.mode == "summary" or self.args.mode == "all":
+            self.report.summary_report(self.config.get("general", "report_title"))
+            print ""
+            if self.args.mode == "user" or self.args.mode == "all":
+                self.report.user_consumption_report()
 
-# Read configuration file 
-config.read(args.config)
+    def args_histo(self):
+        """ Present the appropriate histograms depending on CLI options """
+        if self.args.mode == 'elapsed' or self.args.mode == 'all':
+            print ""
+            self.report.histogram("Elapsed table", "time (s)", self.time_bins, self.report.data.get_elapsed_values())
+        if self.args.mode == 'timelimit' or self.args.mode == 'all':
+            print ""
+            self.report.histogram("Timelimit table", "time (s)", self.time_bins, self.report.data.get_timelimit_values())
+        if self.args.mode == 'accuracy' or self.args.mode == 'all':
+            print ""
+            self.report.histogram("Accuracy table", "accuracy (%)", [0,10,20,30,40,50,60,70,75,80,85,90,91,92,93,94,95,96,97,98,99,100,200], self.report.data.get_accuracy_values())
 
-# Apply cli options
-if args.debug:
-    dump_configuration(config)
+    #CLI entrypoint
+    def main(self):
+        # Configuration defaults
+        self.config.add_section("general")
+        self.config.set("general", "report_title", "Report")
+        self.config.set("general", "sacct_path", "/bin/sacct")
 
-if args.user:
-     sacct_command.append("-u" + ','.join(args.user))
+         # Read configuration file
+        self.config.read(self.args.config)
 
-sacct_command.append("-S" + args.start)
-sacct_command.append("-E" + args.end)
+        # Apply cli options
+        if self.args.debug:
+            self.dump_configuration()
 
-try:
-    start = parse_date(args.start)
-    end   = parse_date(args.end) + datetime.timedelta(days=1)
-    timedelta = end - start
+        if self.args.user:
+            self.sacct_command.append("-u" + ','.join(self.args.user))
 
-    total_avail_cpuh = int(config.get("general", "avail_cpu_number")) * timedelta.total_seconds() / 3600.0
+        self.sacct_command.append("-S" + self.args.start)
+        self.sacct_command.append("-E" + self.args.end)
 
-    data = Data(total_avail_cpuh, args.start, args.end)
-    sacct_command[0] = config.get("general", "sacct_path")
-    for line in subprocess.check_output(sacct_command).split("\n"):
-        if line: 
-            data.aggregate_job_data(line.split("|"))
+        try:
+            start = parse_date(self.args.start)
+            end = parse_date(self.args.end)
+            timedelta = end - start + datetime.timedelta(days=1)
 
-    report = Report(data)
-    args.func(args)
+            total_avail_cpuh = int(self.config.get("general", "avail_cpu_number")) * \
+                               timedelta.total_seconds() / 3600.0
 
-except subprocess.CalledProcessError as e:
-    print "Execution error in:"
-    print "%s returned code %s" % (e.cmd, e.returncode)
-    print "Message is %s" % e.output
+            data = Data(total_avail_cpuh, self.args.start, self.args.end)
+            self.sacct_command[0] = self.config.get("general", "sacct_path")
+            for line in subprocess.check_output(self.sacct_command).split("\n"):
+                if line:
+                    data.aggregate_job_data(line.split("|"))
 
+            self.report = Report(data)
+            self.args.func()
+
+        except subprocess.CalledProcessError as e:
+            print "Execution error in:"
+            print "%s returned code %s" % (e.cmd, e.returncode)
+            print "Message is %s" % e.output
