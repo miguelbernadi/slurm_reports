@@ -72,8 +72,10 @@ class Data(object):
     pattern_time = re.compile("[0-9]+")
     pattern_cancelled_user = re.compile("^CANCELLED by [0-9]+$")
 
-    def __init__(self, total_avail_cpuh):
+    def __init__(self, total_avail_cpuh, start_date, end_date):
         self.total_avail_cpuh = total_avail_cpuh
+        self.start_date = start_date
+        self.end_date = end_date
 
     def aggregate_job_data(self,job_fields):
         """ Process the records one row at a time """
@@ -149,7 +151,7 @@ class Report(object):
         """ Main report output, including overall job execution details """
         print title
         print "Report generated on                    %s" % datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
-        print "Data gathered between           %s - %s"    % (args.start, args.end)
+        print "Data gathered between           %s - %s"    % (self.data.start_date, self.data.end_date)
         print "-" * 55
         print "Jobs submitted:                      %6d  (%6.2f %%)" % ( self.data.total_entries,        float(self.data.total_entries)        / self.data.total_entries * 100 )
         print "Jobs executed successfully:          %6d  (%6.2f %%)" % ( self.data.total_completed,      float(self.data.total_completed)      / self.data.total_entries * 100 )
@@ -296,7 +298,7 @@ try:
 
     total_avail_cpuh = int(config.get("general", "avail_cpu_number")) * timedelta.total_seconds() / 3600.0
 
-    data = Data(total_avail_cpuh)
+    data = Data(total_avail_cpuh, args.start, args.end)
     sacct_command[0] = config.get("general", "sacct_path")
     for line in subprocess.check_output(sacct_command).split("\n"):
         if line: 
