@@ -68,8 +68,12 @@ class Data:
     total_pending = 0
     total_unknown = 0
     total_compute_hours = 0
+    total_avail_cpuh = 0
     pattern_time = re.compile("[0-9]+")
     pattern_cancelled_user = re.compile("^CANCELLED by [0-9]+$")
+
+    def __init__(self, total_avail_cpuh):
+        self.total_avail_cpuh = total_avail_cpuh
 
     def aggregate_job_data(self,job_fields):
         """ Process the records one row at a time """
@@ -161,7 +165,7 @@ class Report:
             print "WARNING: unknown state: %s"   % self.data.total_unknown
         print "-" * 55
 
-    def user_consumption_report(self, total_avail_cpuh):
+    def user_consumption_report(self):
         """ Report that shows per user consumption """
         print "%10s   %19s   %20s" % ("Username", "Jobs", "Cpu_hours")
         print "-" * 55
@@ -170,7 +174,7 @@ class Report:
             cpuh = self.data.users[key].total_cpuh()
             print "%10s   %8d (%6.2f %%)   %9.2f (%6.2f %%)" % (key, jobs, 100.0 * jobs / self.data.total_entries , cpuh, 100.0 * cpuh / self.data.total_compute_hours)
         print "-" * 55
-        print     "%10s   %8d              %9.2f (%6.2f %%)" % ("Total", self.data.total_entries, self.data.total_compute_hours, 100.0 * self.data.total_compute_hours / total_avail_cpuh)
+        print     "%10s   %8d              %9.2f (%6.2f %%)" % ("Total", self.data.total_entries, self.data.total_compute_hours, 100.0 * self.data.total_compute_hours / self.data.total_avail_cpuh)
 
     def histogram(self, title, header, bins, data):
         """ Report showing a histogram table """
@@ -216,7 +220,7 @@ def args_report(args):
         report.summary_report(config.get("general", "report_title"))
         print ""
     if args.mode == "user" or args.mode == "all":
-        report.user_consumption_report(total_avail_cpuh)
+        report.user_consumption_report()
 
 def args_histo(args):
     """ Present the appropriate histograms depending on CLI options """
@@ -292,7 +296,7 @@ try:
 
     total_avail_cpuh = int(config.get("general", "avail_cpu_number")) * timedelta.total_seconds() / 3600.0
 
-    data = Data()
+    data = Data(total_avail_cpuh)
     sacct_command[0] = config.get("general", "sacct_path")
     for line in subprocess.check_output(sacct_command).split("\n"):
         if line: 
