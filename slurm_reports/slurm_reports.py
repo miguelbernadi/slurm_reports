@@ -286,13 +286,21 @@ class Slurm_Reports(object):
         """ Present the appropriate histograms depending on CLI options """
         if self.args.mode == 'elapsed' or self.args.mode == 'all':
             print ""
-            self.report.histogram("Elapsed table", "time (s)", self.time_bins, self.report.data.get_elapsed_values())
+            self.report.histogram("Elapsed table", "time (s)",
+                                  self.time_bins,
+                                  self.report.data.get_elapsed_values())
         if self.args.mode == 'timelimit' or self.args.mode == 'all':
             print ""
-            self.report.histogram("Timelimit table", "time (s)", self.time_bins, self.report.data.get_timelimit_values())
+            self.report.histogram("Timelimit table", "time (s)",
+                                  self.time_bins,
+                                  self.report.data.get_timelimit_values())
         if self.args.mode == 'accuracy' or self.args.mode == 'all':
             print ""
-            self.report.histogram("Accuracy table", "accuracy (%)", [0,10,20,30,40,50,60,70,75,80,85,90,91,92,93,94,95,96,97,98,99,100,200], self.report.data.get_accuracy_values())
+            self.report.histogram("Accuracy table", "accuracy (%)",
+                                  [0, 10, 20, 30, 40, 50, 60, 70, 75,
+                                   80, 85, 90, 91, 92, 93, 94, 95, 96,
+                                   97, 98, 99, 100, 200],
+                                  self.report.data.get_accuracy_values())
 
     #CLI entrypoint
     def main(self):
