@@ -12,7 +12,7 @@ import ConfigParser
 #Handle dates
 import datetime
 
-class UserRecord:
+class UserRecord(object):
     """ Structure to store aggregated job record statistics on a user basis """
     def __init__(self, name):
         self.username = name
@@ -52,7 +52,7 @@ class UserRecord:
     def jobs_partition(self, partition):
         return self.partition_jobs[partition]
  
-class Data:
+class Data(object):
     """ Stores the analysed data """
     users = {} # hold user -> UserRecord relations
     times = [] # list of tuples (elapsed, timelimit, accuracy)
@@ -139,7 +139,7 @@ class Data:
         """ Return array containing accuracy values for all jobs in set """
         return [i[2] for i in self.times]
 
-class Report:
+class Report(object):
     """ Displays results """
 
     def __init__(self, data):
