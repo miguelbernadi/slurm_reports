@@ -1,34 +1,37 @@
 # SLURM Reports generator
 
-This utility is useful to analyze the usage of a SLURM computing cluster and
-to create reports allowing to track the cluster usage. It uses the accounting
-data provided by 'sacct' to create the reports. It's not useful for billing
-but is used for capacity planning and to tailor an adequate Scheduling
-Policy.
+This utility is useful to analyze the usage of a SLURM computing
+cluster and to create reports allowing to track the cluster usage. It
+uses the accounting data provided by 'sacct' to create the
+reports. It's not useful for billing but is used for capacity planning
+and to tailor an adequate Scheduling Policy.
 
 ## Requirements
 
-It's a Python program. It's been developed using Python 2.7.6 and uses Python's
-Standard libraries plus:
+It's a Python program. It's been developed using Python 2.7.6 and uses
+Python's Standard libraries plus:
 
 * numpy (for histogram creation)
 
 # Installation
 
-There is no real installation process required, but some configuration may
-be needed for a successful run. You may have a Configuration file, either
-in the same directory as the command or in a configured path (can be
-overridden through a command-line option). No standard default has been
-set, so you could modify the code (to store conf in your $HOME):
+This project uses the standard Python packaging system. Therefore,
+just run:
 
 ```
--config.set("general", "configuration_file_path", "./config")
-+config.set("general", "configuration_file_path", "/home/user/.slurm_report")
+    python setup.py install
 ```
+
+It will also automatically install any dependencies needed.
+
+This setup does not create an appropriate config file. If you need one
+to customize the tool's behaviour, read the following section. By
+default config files are looked for in the current directory.
 
 ## Configuration file
 
-The configuration file uses INI file's syntax. The options available are:
+The configuration file uses INI file's syntax. The options available
+are:
 
 ```
 [general]
@@ -37,9 +40,11 @@ avail_cpu_number=20
 sacct_path=/bin/sacct
 ```
 
-* sacct\_path: Path to the sacct command. This is the option most likely to need configuration (default: /bin/sacct)
-* report\_title: Provides the title for the Report generated (default: Report)
-* avail\_cpu\_number: Number of CPUs available to compute the usage on the period (default: None)
+* sacct\_path: Path to the sacct command. This is the option most
+* likely to need configuration (default: /bin/sacct) report\_title:
+* Provides the title for the Report generated (default: Report)
+* avail\_cpu\_number: Number of CPUs available to compute the usage on
+* the period (default: None)
 
 # Usage
 
