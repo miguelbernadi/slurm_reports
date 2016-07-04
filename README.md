@@ -41,10 +41,10 @@ sacct_path=/bin/sacct
 ```
 
 * sacct\_path: Path to the sacct command. This is the option most
-* likely to need configuration (default: /bin/sacct) report\_title:
-* Provides the title for the Report generated (default: Report)
+  likely to need configuration (default: /bin/sacct)
+* report\_title: Provides the title for the Report generated (default: Report)
 * avail\_cpu\_number: Number of CPUs available to compute the usage on
-* the period (default: None)
+  the period (default: None)
 
 # Usage
 
