@@ -78,7 +78,7 @@ class Data(object):
         self.start_date = start_date
         self.end_date = end_date
 
-    def aggregate_job_data(self,job_fields):
+    def aggregate_job_data(self, job_fields):
         """ Process the records one row at a time """
         if len(job_fields) < 9:
             pass
