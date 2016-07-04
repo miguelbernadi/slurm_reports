@@ -147,6 +147,8 @@ class Report(object):
 
     def __init__(self, data):
         self.data = data
+        if data.total_entries == 0:
+            raise RuntimeError("No data to process!")
 
     def summary_report(self, title):
         """ Main report output, including overall job execution details """
