@@ -1,0 +1,20 @@
+css:
+  enabled: false
+
+coffeescript:
+  enabled: false
+
+javascript:
+  enabled: false
+
+haml:
+  enabled: false
+
+go:
+  enabled: false
+
+ruby:
+  enabled: false
+
+python:
+  enabled: true
